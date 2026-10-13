@@ -1,0 +1,46 @@
+{
+  "caption": "\"Om du inte kan välkomna känslan, välkomna motståndet\"\nJoe Hudson\n\nI den bästa av världar kan vi motta alla våra känslor med öppna armar, både de härliga och de obekväma. Men samtidigt lever vi i ett samhälle där vi får lära oss att \"lugna ned dig\" när vi är upprymda, \"det var inte så farligt, gråt inte\" eller \"det är inget att vara arg för\".\n\nDet här sätter sig betydligt djupare än vad du kanske tror. För när vi är små tolkar vi detta som att våra känslor inte är okej att uttryckas vilket leder till att vi får en inre röst som intalar oss detta, ibland hela livet ut.\n\nDärför kan det vara svårt att känna våra känslor, även glädje eller kärlek, för det är associerat med något dåligt, något som inte får ta plats. Vi har byggt ett motstånd till känslan.\n\nIstället för att försöka intala dig själv eller forcera dig till acceptans av känslan, bara för att du \"vet\" att du \"borde\" göra det, testa istället att välkomna motståndet till den och se vad som skiftar.\n\nVilken känsla möter du med mest motstånd?\n\n#garbagepostchallange",
+  "slides": [
+    {
+      "attribution": "Joe Hudson",
+      "layout": "quote",
+      "text": "Om du inte kan välkomna känslan, <em>välkomna motståndet</em>."
+    },
+    {
+      "body": [
+        "I den bästa av världar kan vi motta alla våra känslor med <strong>öppna armar</strong>, både de härliga och de obekväma."
+      ],
+      "layout": "text"
+    },
+    {
+      "body": [
+        "Men samtidigt lever vi i ett samhälle där vi får lära oss att <em>\"lugna ned dig\"</em> när vi är upprymda, <em>\"det var inte så farligt, gråt inte\"</em> eller <em>\"det är inget att vara arg för\"</em>."
+      ],
+      "layout": "text"
+    },
+    {
+      "body": [
+        "Det här sätter sig betydligt djupare än vad du kanske tror.",
+        "För när vi är små tolkar vi detta som att våra känslor inte är okej att uttryckas vilket leder till att vi får en <strong>inre röst</strong> som intalar oss detta, ibland hela livet ut."
+      ],
+      "layout": "text"
+    },
+    {
+      "body": [
+        "Därför kan det vara svårt att känna våra känslor, även glädje eller kärlek, för det är associerat med något dåligt, något som inte får ta plats.",
+        "Vi har byggt ett <strong>motstånd</strong> till känslan."
+      ],
+      "layout": "text"
+    },
+    {
+      "body": [
+        "Istället för att försöka intala dig själv eller forcera dig till acceptans av känslan, bara för att du \"vet\" att du \"borde\" göra det, testa istället att <strong>välkomna motståndet</strong> till den och se vad som skiftar."
+      ],
+      "layout": "text"
+    },
+    {
+      "layout": "cta",
+      "title": "Vilken känsla möter du med mest <span class=\"y\">motstånd</span>?"
+    }
+  ]
+}
