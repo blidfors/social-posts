@@ -1,0 +1,444 @@
+<title>Inläggsverkstaden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap">
+<style>
+/* Layout: en arbetsyta per inlägg med en flik per kanal. Instagram har bilderna i en rad, Threads och Facebook har textredigering. Frågor och originaltext står alltid till höger. */
+:root {
+  --bg: #f3f0f4; --surface: #ffffff; --line: #ddd5e0; --fg: #2f2937; --muted: #6d6476;
+  --accent: #6a4f76; --accent-fg: #ffffff; --ok: #1e8470; --warn: #b4610a; --warn-bg: #fdf0e1;
+  --ui: 'Familjen Grotesk', system-ui, sans-serif; --serif: 'Lora', Georgia, serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1d1922; --surface: #27222d; --line: #3d3546; --fg: #ece6ef; --muted: #a99fb2;
+  --accent: #c7a6d3; --accent-fg: #1d1922; --ok: #5cc3a8; --warn: #f0a85a; --warn-bg: #3a2a1a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1d1922; --surface: #27222d; --line: #3d3546; --fg: #ece6ef; --muted: #a99fb2;
+  --accent: #c7a6d3; --accent-fg: #1d1922; --ok: #5cc3a8; --warn: #f0a85a; --warn-bg: #3a2a1a; color-scheme: dark }
+
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+header h1 { font-family: var(--serif); font-size: 26px; margin: 0; font-weight: 700; margin-right: auto; }
+select, button, textarea, input { font: inherit; color: inherit; }
+select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; max-width: 100%; }
+.pill { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; border: 1px solid currentColor; color: var(--muted); }
+.pill.forslag { color: var(--accent); } .pill.skickad, .pill.godkand { color: var(--ok); }
+.save { font-size: 13px; color: var(--muted); min-width: 7em; text-align: right; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { border: 0; background: none; padding: 10px 14px; cursor: pointer; color: var(--muted); font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tab .off { font-weight: 400; font-size: 12px; margin-left: 4px; }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.toolbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  background: var(--bg); padding-block: 8px; border-bottom: 1px solid var(--line); }
+.toolbar .hint { color: var(--muted); font-size: 13px; margin-left: auto; }
+@media (max-width: 600px) { .toolbar .hint { display: none; } .tb { padding: 5px 10px; } }
+.tb, .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.tb:hover:not(:disabled), .btn:hover:not(:disabled) { border-color: var(--accent); }
+.tb:focus-visible, .btn:focus-visible, .ctl:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tb:disabled, .btn:disabled { opacity: .45; cursor: default; }
+.tb .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+
+.strip { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+.card { flex: 0 0 auto; width: min(340px, calc(100vw - 48px)); display: flex; flex-direction: column; gap: 8px; scroll-snap-align: start; }
+.slidebox { position: relative; width: 100%; aspect-ratio: 1080 / 1350; overflow: hidden; border-radius: 6px; box-shadow: 0 1px 0 var(--line), 0 6px 18px rgb(0 0 0 / .12); }
+.slidebox > .scaler { position: absolute; top: 0; left: 0; width: 1080px; height: 1350px; transform-origin: 0 0; }
+.cardbar { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.cardbar .n { font-weight: 700; color: var(--fg); margin-right: auto; }
+.ctl { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; width: 30px; height: 28px; cursor: pointer; line-height: 1; }
+.ctl:disabled { opacity: .35; cursor: default; }
+.warn { font-size: 13px; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 4px 8px; }
+[data-field][contenteditable="true"] { outline: none; border-radius: 4px; cursor: text; }
+[data-field][contenteditable="true"]:hover { box-shadow: 0 0 0 4px rgb(106 79 118 / .25); }
+[data-field][contenteditable="true"]:focus { box-shadow: 0 0 0 6px rgb(106 79 118 / .55); }
+
+.cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panel h2 { margin: 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.panelhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; justify-content: space-between; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+textarea { width: 100%; box-sizing: border-box; min-height: 120px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--bg); font-family: var(--serif); font-size: 15px; line-height: 1.55; }
+textarea.tall { min-height: 260px; }
+.count { font-size: 12px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.count.over { color: var(--warn); font-weight: 700; }
+.thpost { display: flex; flex-direction: column; gap: 6px; padding-left: 14px; border-left: 2px solid var(--line); }
+.thpost .row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); }
+.disabled-note { color: var(--muted); font-size: 14px; }
+.imgbox { display: flex; flex-direction: column; gap: 8px; }
+.imgbox img { max-width: 100%; max-height: 360px; object-fit: contain; align-self: flex-start; border-radius: 6px; border: 1px solid var(--line); }
+.imgbox .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); }
+.source { font-family: var(--serif); white-space: pre-wrap; font-size: 14px; color: var(--fg); max-height: 320px; overflow: auto; }
+.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 32px 20px; text-align: center; color: var(--muted); }
+.empty strong { color: var(--fg); font-family: var(--serif); font-size: 18px; display: block; margin-bottom: 6px; }
+.go { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; }
+.sent { font-size: 13px; color: var(--ok); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Inläggsverkstaden</h1>
+    <label for="post" hidden>Välj inlägg</label>
+    <select id="post" hidden></select>
+    <span id="status" class="pill" hidden></span>
+    <span id="save" class="save" aria-live="polite"></span>
+  </header>
+
+  <div id="empty" class="empty">
+    <strong>Här dyker nästa inläggsförslag upp</strong>
+    Skicka en text till Claude och be om ett inlägg. Förslaget läggs här så att du kan ändra texten för Instagram, Threads och Facebook innan du godkänner.
+  </div>
+
+  <div id="editor" hidden>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-instagram" data-tab="instagram" aria-selected="true">Instagram<span class="off" hidden>(av)</span></button>
+      <button class="tab" role="tab" id="tab-threads" data-tab="threads" aria-selected="false">Threads<span class="off" hidden>(av)</span></button>
+      <button class="tab" role="tab" id="tab-facebook" data-tab="facebook" aria-selected="false">Facebook<span class="off" hidden>(av)</span></button>
+    </div>
+
+    <section id="pane-ig-top" style="margin-top:12px">
+      <div class="toolbar" id="toolbar">
+        <button class="tb" data-cmd="em" disabled><em>Kursiv</em></button>
+        <button class="tb" data-cmd="strong" disabled><strong>Fet</strong></button>
+        <button class="tb" data-cmd="g" disabled><span class="sw" style="background:#1e8470"></span>Grön kursiv</button>
+        <button class="tb" data-cmd="y" disabled><span class="sw" style="background:#e08a1e"></span>Gul</button>
+        <button class="tb" data-cmd="clear" disabled>Ta bort format</button>
+        <span class="hint">Klicka i texten på en bild för att ändra den. Markera ord för att formatera.</span>
+      </div>
+      <div class="strip" id="strip" style="margin-top:16px"></div>
+    </section>
+
+    <div class="cols" style="margin-top:20px">
+      <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+        <div class="panel" id="pane-instagram">
+          <div class="panelhead"><h2><label for="caption">Inläggstext, Instagram</label></h2>
+            <label class="toggle"><input type="checkbox" id="on-instagram"> Skicka till Instagram</label></div>
+          <textarea id="caption" class="tall" spellcheck="true" lang="sv"></textarea>
+          <div class="count" id="count"></div>
+          <div class="sent" id="sent-instagram" hidden></div>
+        </div>
+
+        <div class="panel" id="pane-threads" hidden>
+          <div class="panelhead"><h2>Tråd på Threads</h2>
+            <label class="toggle"><input type="checkbox" id="on-threads"> Skicka till Threads</label></div>
+          <div class="disabled-note">Högst 500 tecken per inlägg. Första inlägget syns i flödet, resten hamnar i tråden. Inga länkar eller hashtaggar.</div>
+          <div id="thlist" style="display:flex;flex-direction:column;gap:16px"></div>
+          <div><button class="btn" id="th-add">Lägg till inlägg i tråden</button></div>
+          <div class="sent" id="sent-threads" hidden></div>
+        </div>
+
+        <div class="panel" id="pane-facebook" hidden>
+          <div class="panelhead"><h2><label for="fbtext">Inlägg på Facebook</label></h2>
+            <label class="toggle"><input type="checkbox" id="on-facebook"> Skicka till Facebook</label></div>
+          <textarea id="fbtext" class="tall" spellcheck="true" lang="sv"></textarea>
+          <div class="count" id="fbcount"></div>
+          <div class="imgbox">
+            <h2>Bild</h2>
+            <img id="fbimg" alt="Bild till Facebook-inlägget" hidden>
+            <div id="fbslide" class="slidebox" style="max-width:280px" hidden><div class="scaler"></div></div>
+            <div class="row">
+              <label class="btn" id="fbpick-label" for="fbpick">Välj bild</label>
+              <input type="file" id="fbpick" accept="image/png,image/jpeg,image/webp" hidden>
+              <button class="btn" id="fbremove" hidden>Ta bort bild</button>
+              <span id="fbimgnote"></span>
+            </div>
+          </div>
+          <div class="sent" id="sent-facebook" hidden></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+        <div class="go" id="go">När du är nöjd: skriv <strong>kör</strong> i chatten med Claude. Då skickas det du ser här till de kanaler som är påslagna.</div>
+        <div class="panel" id="notesPanel" hidden><h2>Frågor från Claude</h2><ul class="notes" id="notes"></ul></div>
+        <div class="panel" id="sourcePanel" hidden><h2>Din originaltext</h2><div class="source" id="source"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="layouts.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const st = document.createElement('style'); st.textContent = LEK.css; document.head.append(st);
+  const STATUS = { forslag: 'Förslag', godkand: 'Godkänt', skickad: 'Skickat' };
+  const CH = ['instagram', 'threads', 'facebook'];
+  const TH_MAX = 500, IG_MAX = 2200;
+
+  let db = null, assets = null, canWrite = false, posts = [], currentId = null, doc = null, unsubDoc = null;
+  let dirty = false, saveTimer = null, saving = false, tab = 'instagram';
+  try { tab = localStorage.getItem('lek.tab') || 'instagram'; } catch (_) {}
+
+  // ---- Rensa redigerad HTML till mallens tillåtna taggar ----
+  function clean(node) {
+    let out = '';
+    node.childNodes.forEach(ch => {
+      if (ch.nodeType === 3) { out += ch.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/ /g, ' '); return; }
+      if (ch.nodeType !== 1) return;
+      const tag = ch.tagName.toLowerCase(), inner = clean(ch);
+      if (!inner) return;
+      const cls = ch.classList.contains('g') ? 'g' : ch.classList.contains('y') ? 'y' : '';
+      if (tag === 'em' || tag === 'i') out += cls ? `<em class="${cls}">${inner}</em>` : `<em>${inner}</em>`;
+      else if (tag === 'strong' || tag === 'b') out += `<strong>${inner}</strong>`;
+      else if (tag === 'span' && cls) out += `<span class="${cls}">${inner}</span>`;
+      else out += inner;
+    });
+    return out;
+  }
+  const tidy = (s) => s.replace(/\s+/g, ' ').trim();
+  function readField(el) {
+    if (el.hasAttribute('data-paras')) {
+      const ps = [...el.children].filter(c => /^(P|DIV)$/.test(c.tagName)).map(p => tidy(clean(p))).filter(Boolean);
+      return ps.length ? ps : [tidy(clean(el))];
+    }
+    return tidy(clean(el));
+  }
+  function setPath(obj, path, val) {
+    const parts = path.split('.'); let o = obj;
+    while (parts.length > 1) { const k = parts.shift(); o = o[k]; }
+    o[parts[0]] = val;
+  }
+  function normalize(d) {
+    d.channels = Object.assign({ instagram: true, threads: true, facebook: true }, d.channels || {});
+    d.threads = d.threads && Array.isArray(d.threads.posts) ? d.threads : { posts: [''] };
+    if (!d.threads.posts.length) d.threads.posts = [''];
+    d.facebook = Object.assign({ text: '', image: null }, d.facebook || {});
+    d.slides = d.slides || [];
+    return d;
+  }
+
+  // ---- Flikar ----
+  function showTab(t) {
+    tab = t; try { localStorage.setItem('lek.tab', t); } catch (_) {}
+    document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+    $('pane-ig-top').hidden = t !== 'instagram';
+    CH.forEach(c => $('pane-' + c).hidden = c !== t);
+    if (t === 'facebook' && doc) renderFacebook();
+    if (t === 'instagram' || t === 'facebook') scaleAll();
+    if (t === 'threads') document.querySelectorAll('#thlist textarea').forEach(ta => { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; });
+  }
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+  // ---- Rendering ----
+  function render() {
+    renderSlides(); renderThreads(); renderFacebook();
+    $('caption').value = doc.caption || ''; countIg();
+    CH.forEach(c => {
+      $('on-' + c).checked = !!doc.channels[c]; $('on-' + c).disabled = !canWrite;
+      document.querySelector(`#tab-${c} .off`).hidden = !!doc.channels[c];
+      const s = doc.sent && doc.sent[c], el = $('sent-' + c);
+      el.hidden = !s; el.textContent = s ? `Skickat till Buffer: ${s.when || ''}` : '';
+    });
+    ['caption', 'fbtext'].forEach(id => $(id).readOnly = !canWrite);
+    const notes = doc.notes || [];
+    $('notesPanel').hidden = !notes.length;
+    $('notes').innerHTML = ''; notes.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('notes').append(li); });
+    $('sourcePanel').hidden = !doc.source; $('source').textContent = doc.source || '';
+    const s = $('status'); s.hidden = !doc.status; s.className = 'pill ' + (doc.status || ''); s.textContent = STATUS[doc.status] || doc.status || '';
+    $('go').hidden = doc.status === 'skickad';
+    showTab(tab);
+  }
+
+  function renderSlides() {
+    const strip = $('strip'); strip.innerHTML = '';
+    const slides = doc.slides, n = slides.length;
+    slides.forEach((s, k) => {
+      const card = document.createElement('div'); card.className = 'card';
+      card.innerHTML = `<div class="cardbar"><span class="n">${k + 1} / ${n} · ${({cover:'Omslag',text:'Text',exercise:'Övning',cta:'Avslut',quote:'Citat'})[s.layout] || s.layout}</span>
+        <button class="ctl" data-act="left" aria-label="Flytta vänster" ${k === 0 ? 'disabled' : ''}>←</button>
+        <button class="ctl" data-act="right" aria-label="Flytta höger" ${k === n - 1 ? 'disabled' : ''}>→</button>
+        <button class="ctl" data-act="del" aria-label="Ta bort bild" ${n === 1 ? 'disabled' : ''}>✕</button></div>
+        <div class="slidebox"><div class="scaler">${LEK.html(s, k + 1, n)}</div></div><div class="warn" hidden></div>`;
+      card.querySelectorAll('[data-act]').forEach(b => { b.onclick = () => structural(b.dataset.act, k); b.hidden = !canWrite; });
+      card.querySelector('.scaler').querySelectorAll('[data-field]').forEach(el => {
+        if (!canWrite) return;
+        el.contentEditable = 'true'; el.spellcheck = true; el.lang = 'sv';
+        el.addEventListener('input', () => { setPath(doc.slides[k], el.dataset.field, readField(el)); refit(card); queueSave(); });
+        el.addEventListener('keydown', e => { if (e.key === 'Enter' && !el.hasAttribute('data-paras')) e.preventDefault(); });
+        el.addEventListener('paste', e => { e.preventDefault(); document.execCommand('insertText', false, (e.clipboardData.getData('text/plain') || '').replace(/\s*\n\s*/g, ' ')); });
+      });
+      strip.append(card);
+      refit(card);
+    });
+    scaleAll();
+  }
+  function refit(card) {
+    const r = LEK.fit(card.querySelector('.scaler'));
+    const w = card.querySelector('.warn'); w.hidden = !r.warn; w.textContent = r.warn || '';
+  }
+  function scaleAll() {
+    document.querySelectorAll('.slidebox').forEach(b => { if (b.clientWidth) b.firstElementChild.style.transform = `scale(${b.clientWidth / 1080})`; });
+  }
+  addEventListener('resize', scaleAll);
+  document.fonts && document.fonts.ready.then(() => document.querySelectorAll('.card').forEach(refit));
+
+  function renderThreads() {
+    const list = $('thlist'); list.innerHTML = '';
+    const ps = doc.threads.posts;
+    ps.forEach((txt, k) => {
+      const box = document.createElement('div'); box.className = 'thpost';
+      box.innerHTML = `<div class="row"><label for="th-${k}">${k === 0 ? 'Inlägg 1 (syns i flödet)' : 'Inlägg ' + (k + 1)}</label>
+        <button class="btn" data-del ${ps.length === 1 || !canWrite ? 'hidden' : ''}>Ta bort</button></div>
+        <textarea id="th-${k}" spellcheck="true" lang="sv"></textarea><div class="count"></div>`;
+      const ta = box.querySelector('textarea'), cnt = box.querySelector('.count');
+      ta.value = txt; ta.readOnly = !canWrite;
+      const upd = () => {
+        const n = ta.value.length; cnt.textContent = `${n} / ${TH_MAX} tecken`; cnt.classList.toggle('over', n > TH_MAX);
+        ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px';
+      };
+      requestAnimationFrame(upd);
+      ta.addEventListener('input', () => { doc.threads.posts[k] = ta.value; upd(); queueSave(); });
+      box.querySelector('[data-del]').onclick = () => { doc.threads.posts.splice(k, 1); renderThreads(); queueSave(0); };
+      list.append(box);
+    });
+    $('th-add').hidden = !canWrite || ps.length >= 10;
+  }
+  $('th-add').onclick = () => { doc.threads.posts.push(''); renderThreads(); queueSave(0); const last = $('th-' + (doc.threads.posts.length - 1)); last && last.focus(); };
+
+  function renderFacebook() {
+    $('fbtext').value = doc.facebook.text || ''; countFb();
+    const img = doc.facebook.image;
+    $('fbimg').hidden = !img; if (img) $('fbimg').src = '/_blob/' + img.id;
+    const first = !img && doc.slides && doc.slides[0];
+    $('fbslide').hidden = !first;
+    if (first) { const sc = $('fbslide').firstElementChild; sc.innerHTML = LEK.html(doc.slides[0], 1, 1); LEK.fit(sc); }
+    $('fbremove').hidden = !img || !canWrite;
+    $('fbpick-label').hidden = !assets || !canWrite;
+    $('fbpick-label').textContent = img ? 'Byt bild' : 'Välj egen bild';
+    $('fbremove').textContent = 'Använd första bilden igen';
+    $('fbimgnote').textContent = img ? (img.name || '') : 'Första bilden i karusellen, utan sidnummer.';
+  }
+  $('fbpick').addEventListener('change', async () => {
+    const f = $('fbpick').files[0]; $('fbpick').value = '';
+    if (!f || !assets) return;
+    $('fbimgnote').textContent = 'Laddar upp…';
+    try {
+      const prev = doc.facebook.image;
+      const r = await assets.upload(f, { type: f.type || 'image/jpeg' });
+      doc.facebook.image = { id: r.id, name: f.name, type: r.contentType };
+      renderFacebook(); queueSave(0);
+      if (prev && prev.id !== r.id) assets.delete(prev.id).catch(() => {});
+    } catch (e) {
+      $('fbimgnote').textContent = e && e.code === 'too_large' ? 'Bilden är för stor (högst 20 MB).' : e && e.code === 'unsupported_type' ? 'Välj en PNG-, JPG- eller WebP-bild.' : 'Uppladdningen misslyckades. Försök igen.';
+    }
+  });
+  $('fbremove').onclick = async () => {
+    const prev = doc.facebook.image; doc.facebook.image = null; renderFacebook(); queueSave(0);
+    if (prev && assets) assets.delete(prev.id).catch(() => {});
+  };
+
+  // ---- Redigering ----
+  function structural(act, k) {
+    const sl = doc.slides;
+    if (act === 'left' && k > 0) [sl[k - 1], sl[k]] = [sl[k], sl[k - 1]];
+    if (act === 'right' && k < sl.length - 1) [sl[k + 1], sl[k]] = [sl[k], sl[k + 1]];
+    if (act === 'del' && sl.length > 1) sl.splice(k, 1);
+    renderSlides(); queueSave(0);
+  }
+  function countIg() { const n = $('caption').value.length; $('count').textContent = `${n} / ${IG_MAX} tecken`; $('count').classList.toggle('over', n > IG_MAX); }
+  function countFb() { $('fbcount').textContent = `${$('fbtext').value.length} tecken`; }
+  $('caption').addEventListener('input', () => { doc.caption = $('caption').value; countIg(); queueSave(); });
+  $('fbtext').addEventListener('input', () => { doc.facebook.text = $('fbtext').value; countFb(); queueSave(); });
+  CH.forEach(c => $('on-' + c).addEventListener('change', () => {
+    doc.channels[c] = $('on-' + c).checked;
+    document.querySelector(`#tab-${c} .off`).hidden = doc.channels[c];
+    queueSave(0);
+  }));
+
+  function queueSave(delay = 900) {
+    if (!canWrite) return;
+    dirty = true; $('save').textContent = 'Ändrat…';
+    clearTimeout(saveTimer); saveTimer = setTimeout(save, delay);
+  }
+  async function save() {
+    if (saving) { queueSave(300); return; }
+    saving = true;
+    const id = currentId;
+    const body = { slides: doc.slides, caption: doc.caption, threads: doc.threads, facebook: doc.facebook, channels: doc.channels, editedAt: new Date().toISOString(), editedInPage: true };
+    try {
+      await db.doc('posts/' + id).update(body);
+      dirty = false; $('save').textContent = 'Sparat';
+    } catch (e) {
+      const bad = e && e.code === 'invalid_argument';
+      $('save').textContent = bad ? 'Kan inte spara här' : 'Kunde inte spara, försöker igen';
+      if (!bad) setTimeout(() => queueSave(0), 2500);
+    } finally { saving = false; }
+  }
+
+  // Formatverktyg för bilderna
+  const editableOf = (node) => { const el = node && (node.nodeType === 1 ? node : node.parentElement); return el && el.closest('[data-field][contenteditable="true"]'); };
+  document.addEventListener('selectionchange', () => {
+    const s = getSelection(); const on = !!(s.rangeCount && editableOf(s.anchorNode) && !s.isCollapsed);
+    document.querySelectorAll('.tb').forEach(b => b.disabled = !on);
+  });
+  $('toolbar').addEventListener('mousedown', e => { if (e.target.closest('.tb')) e.preventDefault(); });
+  $('toolbar').addEventListener('click', e => {
+    const b = e.target.closest('.tb'); if (!b) return;
+    const s = getSelection(); if (!s.rangeCount) return;
+    const r = s.getRangeAt(0), field = editableOf(r.commonAncestorContainer);
+    if (!field || r.collapsed) return;
+    const cmd = b.dataset.cmd;
+    if (cmd === 'clear') {
+      const anc = r.commonAncestorContainer.nodeType === 1 ? r.commonAncestorContainer : r.commonAncestorContainer.parentElement;
+      const styled = anc.closest('em,i,strong,b,span');
+      const frag = r.extractContents();
+      frag.querySelectorAll('em,i,strong,b,span').forEach(x => x.replaceWith(...x.childNodes));
+      r.insertNode(frag);
+      if (styled && field.contains(styled) && styled !== field) styled.replaceWith(...styled.childNodes);
+    } else {
+      const el = cmd === 'strong' ? document.createElement('strong') : cmd === 'y' ? Object.assign(document.createElement('span'), { className: 'y' }) : document.createElement('em');
+      if (cmd === 'g') el.className = 'g';
+      el.append(r.extractContents()); r.insertNode(el);
+      s.removeAllRanges(); const nr = document.createRange(); nr.selectNodeContents(el); s.addRange(nr);
+    }
+    field.normalize();
+    field.dispatchEvent(new Event('input'));
+  });
+
+  // ---- Data ----
+  function openPost(id) {
+    if (unsubDoc) unsubDoc();
+    currentId = id; doc = null;
+    try { localStorage.setItem('lek.post', id); } catch (_) {}
+    $('post').value = id;
+    unsubDoc = db.doc('posts/' + id).onSnapshot(snap => {
+      if (!snap.exists || snap.metadata.hasPendingWrites) return;
+      const incoming = normalize(JSON.parse(JSON.stringify(snap.data())));
+      const a = document.activeElement;
+      const editing = dirty || (a && (a.isContentEditable || a.tagName === 'TEXTAREA'));
+      if (doc && editing) { doc.status = incoming.status; doc.notes = incoming.notes; doc.sent = incoming.sent; return; }
+      doc = incoming;
+      $('empty').hidden = true; $('editor').hidden = false;
+      render();
+    }, () => { $('save').textContent = 'Anslutningen bröts. Ladda om sidan.'; });
+  }
+
+  async function start() {
+    db = await window.claude?.use?.('db');
+    const user = await window.claude?.use?.('user');
+    if (!db) { $('empty').querySelector('strong').textContent = 'Förslagen kan inte visas här'; return; }
+    canWrite = user ? (user.canEdit ? await user.canEdit() : true) : false;
+    if (canWrite) assets = await window.claude?.use?.('assets');
+    if (!canWrite) $('save').textContent = 'Endast visning';
+    db.collection('posts').orderBy('createdAt', 'desc').limit(30).onSnapshot(snap => {
+      posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const sel = $('post'); sel.innerHTML = '';
+      posts.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.title || p.id}${p.status === 'skickad' ? ' (skickat)' : ''}`; sel.append(o); });
+      sel.hidden = posts.length < 2;
+      if (!posts.length) { $('empty').hidden = false; $('editor').hidden = true; return; }
+      let want = currentId;
+      if (!want) { try { want = localStorage.getItem('lek.post'); } catch (_) {} }
+      if (!want || !posts.some(p => p.id === want) || (currentId === null && posts[0].id !== want && posts[0].status === 'forslag')) want = posts[0].id;
+      if (want !== currentId) openPost(want);
+    }, () => {});
+    $('post').onchange = () => openPost($('post').value);
+  }
+  start();
+})();
+</script>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Lora utan bakgrund, text</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&amp;family=Familjen+Grotesk:wght@600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1080px; height: 1350px; box-sizing: border-box; background: #fbf8f1; font-family: 'Lora', Georgia, serif; color: #463e4f; padding: 64px 64px 44px; display: flex; flex-direction: column; gap: 36px">
+<div style="flex: 1; box-sizing: border-box; background: #fbf8f1; border: 3px solid #d8c9dc; border-radius: 56px; padding: 88px 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 56px; text-align: center; border-width: 4px; border-color: #d8c9dc">
+
+<p style="margin: 0; font-size: 52px; line-height: 1.45; text-wrap: balance">När nervsystemet uppfattar fara hjälper det sällan att höra att allt är lugnt. Kroppen behöver få <em style="font-style: italic">känna</em> det, inte bara förstå det. Därför börjar arbetet i <strong style="font-weight: 700; color: #4e476c">kroppen</strong>, inte i huvudet.</p>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-family: 'Familjen Grotesk', system-ui, sans-serif">
+<div style="font-size: 28px; font-weight: 700; color: #6a4f76">Livet enligt kroppen</div>
+<div style="font-size: 28px; font-weight: 600; color: #4e476c">2 / 4</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1080,"height":1350}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

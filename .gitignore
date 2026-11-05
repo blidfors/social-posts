@@ -1,0 +1,4 @@
+node_modules/
+_render.html
+*.log
+.env*
