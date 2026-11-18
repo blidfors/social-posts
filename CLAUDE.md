@@ -1,6 +1,6 @@
 # social-posts
 
-Verktyg och bilder för inlägg från Livet enligt kroppen. På Instagram (@livetenligtkroppen) blir det en enskild bild eller en karusell. Samma innehåll går också ut som en texttråd på Threads och som ett textinlägg (ibland med en egen bild) på Facebook-sidan. Själva flödet beskrivs i skillen `livet-enligt-kroppen:instagram-inlagg` (plugin-bibliotek). Använd den när Niklas vill göra ett inlägg eller skriver "kör" på ett förslag.
+Verktyg och bilder för inlägg från Livet enligt kroppen. På Instagram (@livetenligtkroppen) blir det en enskild bild eller en karusell. Samma innehåll går också ut som en texttråd på Threads och som ett textinlägg (ibland med en egen bild) på Facebook-sidan. Själva flödet beskrivs i skillen `skapa-och-konvertera:instagram-inlagg` (plugin-bibliotek). Använd den när Niklas vill göra ett inlägg eller skriver "kör" på ett förslag.
 
 Repot är publikt. Lägg aldrig in hemligheter, tokens eller Buffer-uppgifter här.
 
